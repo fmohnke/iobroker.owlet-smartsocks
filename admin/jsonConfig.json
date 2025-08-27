@@ -1,0 +1,106 @@
+{
+  "type": "tabs",
+  "i18n": true,
+  "items": {
+    "main": {
+      "type": "panel",
+      "label": "Owlet Smart Socks",
+      "items": {
+        "email": {
+          "type": "text",
+          "label": "Email",
+          "sm": 12
+        },
+        "password": {
+          "type": "password",
+          "label": "Passwort",
+          "sm": 12
+        },
+        "region": {
+          "type": "select",
+          "label": "Region",
+          "sm": 6,
+          "options": [
+            {
+              "label": "Europe",
+              "value": "europe"
+            },
+            {
+              "label": "World/America",
+              "value": "world"
+            },
+            {
+              "label": "China",
+              "value": "china"
+            }
+          ],
+          "default": "europe"
+        },
+        "interval": {
+          "type": "number",
+          "label": "Polling-Intervall (s)",
+          "sm": 6,
+          "min": 5,
+          "default": 10
+        },
+        "implementation": {
+          "type": "select",
+          "label": "Implementierung",
+          "sm": 6,
+          "options": [
+            {
+              "label": "Node.js (ohne Python)",
+              "value": "node"
+            },
+            {
+              "label": "Python (Worker)",
+              "value": "python"
+            }
+          ],
+          "default": "node"
+        },
+        "pythonBin": {
+          "type": "text",
+          "label": "Python-Binary (nur bei Implementation=python)",
+          "sm": 12
+        },
+        "debugWorker": {
+          "type": "checkbox",
+          "label": "Worker-Debug-Infos (nur Python)",
+          "sm": 12,
+          "default": false
+        },
+        "override.apiKey": {
+          "type": "text",
+          "label": "Override apiKey (optional)",
+          "sm": 12
+        },
+        "override.url_base": {
+          "type": "text",
+          "label": "Override url_base (optional)",
+          "sm": 12
+        },
+        "override.url_mini": {
+          "type": "text",
+          "label": "Override url_mini (optional)",
+          "sm": 12
+        },
+        "override.url_signin": {
+          "type": "text",
+          "label": "Override url_signin (optional)",
+          "sm": 12
+        },
+        "override.app_id": {
+          "type": "text",
+          "label": "Override app_id (optional)",
+          "sm": 6
+        },
+        "override.app_secret": {
+          "type": "text",
+          "label": "Override app_secret (optional)",
+          "sm": 6
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "iobroker.owlet-smartsocks",
+  "version": "0.3.1",
+  "description": "ioBroker adapter for Owlet Smart Socks (Cloud), pure Node.js with optional Python worker",
+  "author": "Fabian & Contributors",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"no tests\""
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@iobroker/adapter-core": "^3.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fmohnke/iobroker.owlet-smartsocks.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fmohnke/iobroker.owlet-smartsocks/issues"
+  },
+  "homepage": "https://github.com/fmohnke/iobroker.owlet-smartsocks#readme"
+}

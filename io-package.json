@@ -1,0 +1,142 @@
+{
+  "common": {
+    "name": "owlet-smartsocks",
+    "version": "0.3.1",
+    "title": "Owlet Smart Socks",
+    "titleLang": {
+      "en": "Owlet Smart Socks",
+      "de": "Owlet Smartsocks"
+    },
+    "desc": {
+      "en": "Reads Owlet Cloud properties; Node.js or Python worker.",
+      "de": "Liest Owlet-Cloud-Daten; Node.js oder Python-Worker."
+    },
+    "authors": [
+      "Fabian & Contributors"
+    ],
+    "keywords": [
+      "owlet",
+      "smartsocks",
+      "baby",
+      "health",
+      "cloud"
+    ],
+    "mode": "daemon",
+    "platform": "Javascript/Node.js",
+    "engineTypes": [
+      "javascript"
+    ],
+    "enabled": true,
+    "messagebox": false,
+    "compact": true,
+    "adminUI": {
+      "config": "json"
+    },
+    "license": "MIT"
+  },
+  "native": {
+    "email": "",
+    "password": "",
+    "region": "europe",
+    "interval": 10,
+    "pythonBin": "",
+    "debugWorker": false,
+    "implementation": "node",
+    "override": {
+      "apiKey": "",
+      "url_base": "",
+      "url_mini": "",
+      "url_signin": "",
+      "app_id": "",
+      "app_secret": ""
+    }
+  },
+  "instanceObjects": [
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "name": "Connected",
+        "type": "boolean",
+        "role": "indicator.connected",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.devices",
+      "type": "state",
+      "common": {
+        "name": "Device count",
+        "type": "number",
+        "role": "value",
+        "read": true,
+        "write": false,
+        "def": 0
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.hasData",
+      "type": "state",
+      "common": {
+        "name": "Has data",
+        "type": "boolean",
+        "role": "indicator",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.lastPoll",
+      "type": "state",
+      "common": {
+        "name": "Last poll",
+        "type": "string",
+        "role": "date",
+        "read": true,
+        "write": false,
+        "def": ""
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.lastError",
+      "type": "state",
+      "common": {
+        "name": "Last error",
+        "type": "string",
+        "role": "text",
+        "read": true,
+        "write": false,
+        "def": ""
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.workerExitCode",
+      "type": "state",
+      "common": {
+        "name": "Worker exit code",
+        "type": "number",
+        "role": "value",
+        "read": true,
+        "write": false,
+        "def": 0
+      },
+      "native": {}
+    },
+    {
+      "_id": "devices",
+      "type": "folder",
+      "common": {
+        "name": "Owlet Devices"
+      },
+      "native": {}
+    }
+  ]
+}
