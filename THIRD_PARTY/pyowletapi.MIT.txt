@@ -1,2 +1,3 @@
+pyowletapi — MIT License (referenced by ioBroker.owlet-smartsocks 0.3.5)
 pyowletapi — MIT License
 Source: https://github.com/ryanbdclark/pyowletapi
