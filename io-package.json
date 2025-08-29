@@ -1,15 +1,15 @@
 {
   "common": {
     "name": "owlet-smartsocks",
-    "version": "0.3.4",
+    "version": "0.3.5",
     "title": "Owlet Smart Socks",
     "titleLang": {
       "en": "Owlet Smart Socks",
       "de": "Owlet Smartsocks"
     },
     "desc": {
-      "de": "Dieser ioBroker-Adapter bindet Owlet Smart Socks über die Cloud an. Node.js-Variante ohne Python; optional Python-Worker mit pyowletapi. Liest Vitalwerte & Alarme, normalisiert States und lernt Min/Max-Ranges (EU/World).",
-      "en": "ioBroker adapter for Owlet Smart Socks via the cloud. Pure Node.js path (no Python) or optional Python worker using pyowletapi. Reads vitals & alerts, normalizes states and learns min/max ranges (EU/World)."
+      "de": "ioBroker-Adapter für Owlet Smart Socks (Cloud). Node.js-Client ohne Python oder optionaler Python-Worker mit pyowletapi. Liest Vitalwerte & Alarme, normalisiert States und lernt Min/Max (EU/World).",
+      "en": "ioBroker adapter for Owlet Smart Socks (cloud). Pure Node.js client or optional Python worker using pyowletapi. Reads vitals & alerts, normalizes states and learns min/max (EU/World)."
     },
     "authors": [
       "Fabian & Contributors"
@@ -45,9 +45,9 @@
     "region": "europe",
     "interval": 10,
     "pythonBin": "",
+    "useVenv": false,
     "debugWorker": false,
     "implementation": "node",
-    "discoverCams": false,
     "override": {
       "apiKey": "",
       "url_base": "",

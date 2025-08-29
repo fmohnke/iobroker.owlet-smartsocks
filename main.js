@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { OwletClientNode } = require('./lib/owlet_client_node');
-const { fromRaw, fromRawGeneric } = require('./lib/normalise');
+const { fromRaw } = require('./lib/normalise');
 
 const PROPERTY_META = {
   app_active: { type: 'boolean', role: 'indicator' },
@@ -105,14 +105,21 @@ class OwletSmartSocks extends utils.Adapter {
 
   spawnWorker() {
     const script = path.join(__dirname, 'lib', 'owlet_worker.py');
-    const venvPython = path.join(__dirname, 'venv', 'bin', 'python');
-    const pythonBin = fs.existsSync(venvPython)
-      ? venvPython
-      : (this.config?.pythonBin || process.env.OWLET_PYTHON_BIN || 'python3');
+    // Default: system python
+    let pythonBin = this.config?.pythonBin || process.env.OWLET_PYTHON_BIN || 'python3';
+    // Optional: venv override if requested
+    if (this.config?.useVenv) {
+      const venvPython = path.join(__dirname, 'venv', 'bin', 'python');
+      if (fs.existsSync(venvPython)) {
+        pythonBin = venvPython;
+        this.log.info('Using local venv Python at ./venv/bin/python');
+      } else {
+        this.log.warn('useVenv enabled but ./venv/bin/python not found. Falling back to system python.');
+      }
+    }
 
     const args = [ script, '--email', this.config.email, '--password', this.config.password, '--region', (this.config.region || 'europe') ];
     if (this.config.debugWorker) args.push('--debug');
-    if (this.config.discoverCams) args.push('--discover-cams');
 
     this.log.info(`Using Python: ${pythonBin}`);
     this.log.debug(`Spawn worker: ${pythonBin} ${args.join(' ')}`);
@@ -135,11 +142,7 @@ class OwletSmartSocks extends utils.Adapter {
         try {
           const override = this.config.override || {};
           const client = new OwletClientNode(this.config.region || 'europe', this.config.email, this.config.password, override);
-
-          const devicesResp = this.config.discoverCams
-            ? await client.getAllDevicesRaw()
-            : await client.getDevices([3,2]);
-
+          const devicesResp = await client.getDevices([3,2]);
           const result = { devices: {} };
           for (const dev of devicesResp.response) {
             const info = dev.device || dev;
@@ -148,17 +151,8 @@ class OwletSmartSocks extends utils.Adapter {
             if (!dsn) continue;
             const propsResp = await client.getPropertiesRaw(dsn);
             const rawMap = propsResp.response || {};
-            const isSock = !!(rawMap.REAL_TIME_VITALS || rawMap.CHARGE_STATUS);
-            const norm = isSock ? fromRaw(rawMap) : fromRawGeneric(rawMap);
-            result.devices[dsn] = { label, properties: norm, kind: isSock ? 'sock' : 'other' };
-
-            if (!isSock) {
-              try {
-                const base = `devices.${dsn.replace(/[^\w.-]+/g, '_')}`;
-                await this.setObjectNotExistsAsync(`${base}.raw`, { type:'state', common:{ name:'Raw properties (JSON)', type:'string', role:'json', read:true, write:false }, native:{} });
-                await this.setStateAsync(`${base}.raw`, JSON.stringify(rawMap), true);
-              } catch {}
-            }
+            const norm = fromRaw(rawMap);
+            result.devices[dsn] = { label, properties: norm };
           }
           payload = result;
         } catch (e) {
@@ -205,12 +199,6 @@ class OwletSmartSocks extends utils.Adapter {
   }
 
   async processPayload(data) {
-    const NUM_KEYS = new Set([
-      'oxygen_saturation','heart_rate','battery_percentage','battery_minutes','signal_strength','oxygen_10_av',
-      'sock_connection','skin_temperature','sleep_state','movement','alerts_mask','update_status','readings_flag',
-      'brick_status','movement_bucket','wellness_alert','monitoring_start_time','base_battery_status'
-    ]);
-
     for (const [dsn, dev] of Object.entries(data.devices)) {
       const dsnId = sanitizeId(dsn);
       const base = `devices.${dsnId}`;
@@ -218,7 +206,7 @@ class OwletSmartSocks extends utils.Adapter {
       await this.setObjectNotExistsAsync(base, {
         type:'channel',
         common:{ name: dev.label || String(dsn) },
-        native:{ dsn: String(dsn), kind: dev.kind || 'unknown' }
+        native:{ dsn: String(dsn) }
       });
 
       await this.setObjectNotExistsAsync(`${base}.label`, {
@@ -231,10 +219,7 @@ class OwletSmartSocks extends utils.Adapter {
       const props = dev.properties || {};
       for (const [key, val] of Object.entries(props)) {
         const id = `${base}.${key}`;
-        const meta = PROPERTY_META[key] || {
-          type: (typeof val === 'number' ? 'number' : (typeof val === 'boolean' ? 'boolean' : 'string')),
-          role: 'value'
-        };
+        const meta = (PROPERTY_META[key] || { type: (typeof val === 'number' ? 'number' : (typeof val === 'boolean' ? 'boolean' : 'string')), role: 'value' });
 
         const existingObj = await this.getObjectAsync(id);
         const targetType =
@@ -248,7 +233,6 @@ class OwletSmartSocks extends utils.Adapter {
         };
         if (meta.unit) obj.common.unit = meta.unit;
         await this.setObjectNotExistsAsync(id, obj);
-
         if (existingObj && existingObj.common && existingObj.common.type !== targetType) {
           await this.extendObjectAsync(id, { common: { type: targetType } });
         }

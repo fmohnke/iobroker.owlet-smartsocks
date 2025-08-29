@@ -61,18 +61,18 @@
         },
         "pythonBin": {
           "type": "text",
-          "label": "Python-Binary (nur bei Implementation=python)",
+          "label": "Python-Binary (Standard: python3)",
           "sm": 12
         },
-        "debugWorker": {
+        "useVenv": {
           "type": "checkbox",
-          "label": "Worker-Debug-Infos (nur Python)",
+          "label": "Stattdessen lokale venv unter ./venv verwenden",
           "sm": 12,
           "default": false
         },
-        "discoverCams": {
+        "debugWorker": {
           "type": "checkbox",
-          "label": "Experimentelle Kamera-Erkennung (alle Geräte listen, generische Properties)",
+          "label": "Worker-Debug-Logs (nur Python)",
           "sm": 12,
           "default": false
         },

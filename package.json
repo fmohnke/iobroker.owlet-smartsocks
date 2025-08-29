@@ -1,6 +1,6 @@
 {
   "name": "iobroker.owlet-smartsocks",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "ioBroker-Adapter für Owlet Smart Socks (Cloud): Node.js-Client mit optionalem Python-Worker. Liest Vitalwerte & Alarme, normalisiert States inkl. Min/Max-Lernen (EU/World).",
   "author": "Fabian & Contributors",
   "license": "MIT",
