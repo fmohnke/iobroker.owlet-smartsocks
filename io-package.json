@@ -1,7 +1,7 @@
 {
   "common": {
     "name": "owlet-smartsocks",
-    "version": "0.3.3",
+    "version": "0.3.4",
     "title": "Owlet Smart Socks",
     "titleLang": {
       "en": "Owlet Smart Socks",

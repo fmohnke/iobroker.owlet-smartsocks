@@ -66,12 +66,9 @@ async def run(email: str, password: str, region: str, discover_cams: bool, debug
 
         devices_list = []
         if discover_cams:
-            # List ALL devices (no filtering by sock version)
             api_response = await api._request("GET", "/devices.json")
             if isinstance(api_response, list):
                 devices_list = api_response
-            else:
-                devices_list = []
         else:
             resp = await api.get_devices([3,2])
             devices_list = resp.get("response", [])
@@ -84,7 +81,6 @@ async def run(email: str, password: str, region: str, discover_cams: bool, debug
             if not dsn:
                 continue
 
-            # Try to detect sock by presence of REAL_TIME_VITALS / CHARGE_STATUS; fall back to generic
             try:
                 props_resp = await api.get_properties(dsn)
                 raw_map = props_resp.get("response", {})
@@ -94,7 +90,6 @@ async def run(email: str, password: str, region: str, discover_cams: bool, debug
 
             is_sock = isinstance(raw_map, dict) and ("REAL_TIME_VITALS" in raw_map or "CHARGE_STATUS" in raw_map)
             if is_sock and not discover_cams:
-                # Use pyowletapi's Sock normalization for socks in normal mode
                 try:
                     sock = Sock(api, info)
                     props = await sock.update_properties()
@@ -103,12 +98,9 @@ async def run(email: str, password: str, region: str, discover_cams: bool, debug
                     sys.stderr.write(f"ERROR: sock.update_properties failed for {dsn}: {e}\n")
                     norm = from_raw_generic(raw_map)
             else:
-                # Generic path (for cams or when discovery enabled)
                 norm = from_raw_generic(raw_map)
 
             out["devices"][dsn] = {"label": label, "properties": norm, "kind": "sock" if is_sock else "other"}
-
-            # Add raw dump for non-sock devices to help mapping
             if not is_sock:
                 out["devices"][dsn]["raw"] = raw_map
 
