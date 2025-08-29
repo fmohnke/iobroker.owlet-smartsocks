@@ -1,4 +1,4 @@
-# ioBroker.owlet-smartsocks (0.3.2)
+# ioBroker.owlet-smartsocks (0.3.3)
 SPDX-License-Identifier: MIT
 
 Dieser ioBroker-Adapter bindet Owlet Smart Socks über die Cloud an. Die Node.js-Variante kommt ohne Python aus; alternativ kann ein Python-Worker mit pyowletapi genutzt werden. Der Adapter authentifiziert gegen Owlet/Ayla (EU/World), liest Geräteeigenschaften und Vitaldaten (z. B. SpO₂, Herzfrequenz, Akku, Bewegung, Laden, Alarme), normalisiert die Werte in strukturierte States und lernt für numerische Metriken Min/Max-Grenzen aus Real-Daten. Lizenz: MIT.
