@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const { OwletClientNode } = require('./lib/owlet_client_node');
-const { fromRaw } = require('./lib/normalise');
+const { fromRaw, fromRawGeneric } = require('./lib/normalise');
 
 const PROPERTY_META = {
   app_active: { type: 'boolean', role: 'indicator' },
@@ -109,16 +109,30 @@ class OwletSmartSocks extends utils.Adapter {
         try {
           const override = this.config.override || {};
           const client = new OwletClientNode(this.config.region || 'europe', this.config.email, this.config.password, override);
-          const devicesResp = await client.getDevices([3,2]);
+
+          const devicesResp = this.config.discoverCams
+            ? await client.getAllDevicesRaw()
+            : await client.getDevices([3,2]);
+
           const result = { devices: {} };
           for (const dev of devicesResp.response) {
             const info = dev.device || dev;
             const dsn = String(info.dsn || '').trim();
-            const label = String(info.product_name || info.name || dsn);
+            const label = String(info.product_name || info.name || info.model || dsn);
             if (!dsn) continue;
             const propsResp = await client.getPropertiesRaw(dsn);
-            const norm = fromRaw(propsResp.response);
-            result.devices[dsn] = { label, properties: norm };
+            const rawMap = propsResp.response || {};
+            const isSock = !!(rawMap.REAL_TIME_VITALS || rawMap.CHARGE_STATUS);
+            const norm = isSock ? fromRaw(rawMap) : fromRawGeneric(rawMap);
+            result.devices[dsn] = { label, properties: norm, kind: isSock ? 'sock' : 'other' };
+
+            if (!isSock) {
+              try {
+                const base = `devices.${dsn.replace(/[^\w.-]+/g, '_')}`;
+                await this.setObjectNotExistsAsync(`${base}.raw`, { type:'state', common:{ name:'Raw properties (JSON)', type:'string', role:'json', read:true, write:false }, native:{} });
+                await this.setStateAsync(`${base}.raw`, JSON.stringify(rawMap), true);
+              } catch {}
+            }
           }
           payload = result;
         } catch (e) {
@@ -174,7 +188,7 @@ class OwletSmartSocks extends utils.Adapter {
     for (const [dsn, dev] of Object.entries(data.devices)) {
       const dsnId = sanitizeId(dsn);
       const base = `devices.${dsnId}`;
-      await this.setObjectNotExistsAsync(base, { type:'channel', common:{ name: dev.label || String(dsn) }, native:{ dsn: String(dsn) } });
+      await this.setObjectNotExistsAsync(base, { type:'channel', common:{ name: dev.label || String(dsn) }, native:{ dsn: String(dsn), kind: dev.kind || 'unknown' } });
       await this.setObjectNotExistsAsync(`${base}.label`, { type:'state', common:{ name:'Label', type:'string', role:'text', read:true, write:false }, native:{} });
       await this.setStateAsync(`${base}.label`, dev.label || '', true);
 
@@ -190,8 +204,7 @@ class OwletSmartSocks extends utils.Adapter {
         await this.setObjectNotExistsAsync(`${base}.${key}`, obj);
         await this.setStateAsync(`${base}.${key}`, val, true);
 
-        // Live Min/Max lernen für numerische Felder
-        if (NUM_KEYS.has(key) && typeof val === 'number' && Number.isFinite(val)) {
+        if (typeof val === 'number' && Number.isFinite(val)) {
           const mmBase = `${base}.meta.minmax.${key}`;
           await this.setObjectNotExistsAsync(`${base}.meta`, { type:'channel', common:{ name:'Meta' }, native:{} });
           await this.setObjectNotExistsAsync(`${base}.meta.minmax`, { type:'channel', common:{ name:'Min/Max learned' }, native:{} });

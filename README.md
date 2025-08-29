@@ -1,46 +1,28 @@
-# ioBroker.owlet-smartsocks (0.3.1)
+# ioBroker.owlet-smartsocks (0.3.2)
 SPDX-License-Identifier: MIT
 
-## Varianten
-- **Node.js (empfohlen):** läuft ohne Python/pyowletapi.
-- **Python-Worker (optional):** nutzt pyowletapi.
+Dieser ioBroker-Adapter bindet Owlet Smart Socks über die Cloud an. Die Node.js-Variante kommt ohne Python aus; alternativ kann ein Python-Worker mit pyowletapi genutzt werden. Der Adapter authentifiziert gegen Owlet/Ayla (EU/World), liest Geräteeigenschaften und Vitaldaten (z. B. SpO₂, Herzfrequenz, Akku, Bewegung, Laden, Alarme), normalisiert die Werte in strukturierte States und lernt für numerische Metriken Min/Max-Grenzen aus Real-Daten. Lizenz: MIT.
 
 ## Installation
 ```bash
 cd /opt/iobroker/node_modules
-unzip -o ~/Downloads/iobroker.owlet-smartsocks-0.3.1-repo.zip
+# aus GitHub clonen (empfohlen)
+git clone https://github.com/fmohnke/iobroker.owlet-smartsocks.git iobroker.owlet-smartsocks
 iobroker upload owlet-smartsocks
 iobroker restart owlet-smartsocks.0
 ```
 
-## Konfiguration
-- **Implementation:** `Node.js (ohne Python)` oder `Python (Worker)`
-- **Region:** `europe` oder `world`
-- **E-Mail / Passwort**
-
-### Node.js Regionen
-`lib/region_info.js` enthält fertige Werte für `europe` und `world`. Overrides sind optional.
-
-## Python-Variante
+## Python-Worker (optional)
 ```bash
 cd /opt/iobroker/node_modules/iobroker.owlet-smartsocks
 python3 -m venv venv
 ./venv/bin/pip install --upgrade pip
 ./venv/bin/pip install -i https://pypi.org/simple --no-cache-dir pyowletapi aiohttp
-# notfalls aus GitHub:
-# ./venv/bin/pip install --no-cache-dir git+https://github.com/ryanbdclark/pyowletapi.git
 ```
-In der Instanz:
-- Implementation = **Python (Worker)**
-- Python-Binary = `/opt/iobroker/node_modules/iobroker.owlet-smartsocks/venv/bin/python`
+Instanz: Implementation **Python (Worker)**, Binary `/opt/iobroker/node_modules/iobroker.owlet-smartsocks/venv/bin/python`.
 
-Optionaler Test:
-```bash
-/opt/iobroker/node_modules/iobroker.owlet-smartsocks/venv/bin/python   /opt/iobroker/node_modules/iobroker.owlet-smartsocks/lib/owlet_worker.py   --email "<mail>" --password "<pass>" --region europe --debug
-```
-
-## States
-`devices.<DSN>.*` enthält normalisierte Eigenschaften inkl. Min/Max-Lernen unter `devices.<DSN>.meta.minmax.*`.
-
-## Lizenz
-MIT. Drittkomponentenhinweise siehe `THIRD_PARTY_NOTICES.md`.
+## Experimentelle Kamera-Erkennung
+Aktiviere in der Instanz **„Experimentelle Kamera-Erkennung“**, damit der Adapter **alle Geräte** (nicht nur Socks) auflistet und deren Properties generisch erfasst.
+- Für Geräte ohne Sock-Properties werden die Roh-Keys generisch normalisiert (`fromRawGeneric`); numerische Werte erhalten Min/Max-Lernen.
+- Zusätzlich legt der Adapter unter `devices.<DSN>.raw` einen JSON-Dump der Roh-Properties ab, um ein Mapping zu verifizieren.
+- Videostreams/Clips sind **nicht** Teil der Ayla-Properties und werden nicht unterstützt.

@@ -1,25 +1,30 @@
 {
   "common": {
     "name": "owlet-smartsocks",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "title": "Owlet Smart Socks",
     "titleLang": {
       "en": "Owlet Smart Socks",
       "de": "Owlet Smartsocks"
     },
     "desc": {
-      "en": "Reads Owlet Cloud properties; Node.js or Python worker.",
-      "de": "Liest Owlet-Cloud-Daten; Node.js oder Python-Worker."
+      "de": "Dieser ioBroker-Adapter bindet Owlet Smart Socks über die Cloud an. Node.js-Variante ohne Python; optional Python-Worker mit pyowletapi. Liest Vitalwerte & Alarme, normalisiert States und lernt Min/Max-Ranges (EU/World).",
+      "en": "ioBroker adapter for Owlet Smart Socks via the cloud. Pure Node.js path (no Python) or optional Python worker using pyowletapi. Reads vitals & alerts, normalizes states and learns min/max ranges (EU/World)."
     },
     "authors": [
       "Fabian & Contributors"
     ],
     "keywords": [
+      "iobroker",
+      "iobroker-adapter",
       "owlet",
-      "smartsocks",
-      "baby",
+      "smart-socks",
+      "baby-monitor",
       "health",
-      "cloud"
+      "cloud",
+      "nodejs",
+      "python",
+      "mit-license"
     ],
     "mode": "daemon",
     "platform": "Javascript/Node.js",
@@ -42,6 +47,7 @@
     "pythonBin": "",
     "debugWorker": false,
     "implementation": "node",
+    "discoverCams": false,
     "override": {
       "apiKey": "",
       "url_base": "",

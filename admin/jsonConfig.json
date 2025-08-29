@@ -70,6 +70,12 @@
           "sm": 12,
           "default": false
         },
+        "discoverCams": {
+          "type": "checkbox",
+          "label": "Experimentelle Kamera-Erkennung (alle Geräte listen, generische Properties)",
+          "sm": 12,
+          "default": false
+        },
         "override.apiKey": {
           "type": "text",
           "label": "Override apiKey (optional)",
