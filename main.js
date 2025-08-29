@@ -87,6 +87,7 @@ class OwletSmartSocks extends utils.Adapter {
 
     const args = [ script, '--email', this.config.email, '--password', this.config.password, '--region', (this.config.region || 'europe') ];
     if (this.config.debugWorker) args.push('--debug');
+    if (this.config.discoverCams) args.push('--discover-cams');
 
     this.log.info(`Using Python: ${pythonBin}`);
     this.log.debug(`Spawn worker: ${pythonBin} ${args.join(' ')}`);
