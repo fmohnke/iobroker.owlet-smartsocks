@@ -14,8 +14,16 @@ Der Adapter authentifiziert gegen Owlet/Ayla (EU/World), liest Geräteeigenschaf
 cd /opt/iobroker/node_modules
 git clone https://github.com/fmohnke/iobroker.owlet-smartsocks.git iobroker.owlet-smartsocks
 iobroker upload owlet-smartsocks
-iobroker restart owlet-smartsocks.0
+iobroker add iobroker.owlet-smartsocks
 ```
+
+## Update
+```bash
+cd /opt/iobroker/node_modules
+git clone https://github.com/fmohnke/iobroker.owlet-smartsocks.git iobroker.owlet-smartsocks
+iobroker upload owlet-smartsocks
+iobroker restart owlet-smartsocks.<x>
+´´´
 
 ## Konfiguration
 - **Email/Passwort** deines Owlet-Kontos
