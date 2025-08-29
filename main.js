@@ -46,6 +46,31 @@ function parseWorkerOutput(raw) {
   }
 }
 
+function coerceToType(val, targetType) {
+  if (val === null || val === undefined) {
+    if (targetType === 'string') return '';
+    if (targetType === 'number') return null;
+    return false;
+  }
+  switch (targetType) {
+    case 'boolean': {
+      if (typeof val === 'boolean') return val;
+      if (typeof val === 'number') return val !== 0;
+      const s = String(val).trim().toLowerCase();
+      return ['1','true','t','yes','y','on'].includes(s);
+    }
+    case 'number': {
+      if (typeof val === 'number') return val;
+      if (typeof val === 'boolean') return val ? 1 : 0;
+      const n = Number(val);
+      return Number.isFinite(n) ? n : null;
+    }
+    case 'string':
+    default:
+      return String(val);
+  }
+}
+
 class OwletSmartSocks extends utils.Adapter {
   constructor(options = {}) {
     super({ ...options, name: 'owlet-smartsocks' });
@@ -87,6 +112,7 @@ class OwletSmartSocks extends utils.Adapter {
 
     const args = [ script, '--email', this.config.email, '--password', this.config.password, '--region', (this.config.region || 'europe') ];
     if (this.config.debugWorker) args.push('--debug');
+    if (this.config.discoverCams) args.push('--discover-cams');
 
     this.log.info(`Using Python: ${pythonBin}`);
     this.log.debug(`Spawn worker: ${pythonBin} ${args.join(' ')}`);
@@ -188,23 +214,51 @@ class OwletSmartSocks extends utils.Adapter {
     for (const [dsn, dev] of Object.entries(data.devices)) {
       const dsnId = sanitizeId(dsn);
       const base = `devices.${dsnId}`;
-      await this.setObjectNotExistsAsync(base, { type:'channel', common:{ name: dev.label || String(dsn) }, native:{ dsn: String(dsn), kind: dev.kind || 'unknown' } });
-      await this.setObjectNotExistsAsync(`${base}.label`, { type:'state', common:{ name:'Label', type:'string', role:'text', read:true, write:false }, native:{} });
+
+      await this.setObjectNotExistsAsync(base, {
+        type:'channel',
+        common:{ name: dev.label || String(dsn) },
+        native:{ dsn: String(dsn), kind: dev.kind || 'unknown' }
+      });
+
+      await this.setObjectNotExistsAsync(`${base}.label`, {
+        type:'state',
+        common:{ name:'Label', type:'string', role:'text', read:true, write:false },
+        native:{}
+      });
       await this.setStateAsync(`${base}.label`, dev.label || '', true);
 
       const props = dev.properties || {};
       for (const [key, val] of Object.entries(props)) {
-        const meta = PROPERTY_META[key] || { type: (typeof val === 'number' ? 'number' : (typeof val === 'boolean' ? 'boolean' : 'string')), role: 'value' };
+        const id = `${base}.${key}`;
+        const meta = PROPERTY_META[key] || {
+          type: (typeof val === 'number' ? 'number' : (typeof val === 'boolean' ? 'boolean' : 'string')),
+          role: 'value'
+        };
+
+        const existingObj = await this.getObjectAsync(id);
+        const targetType =
+          (existingObj && existingObj.common && existingObj.common.type) ||
+          (meta.type || (typeof val === 'number' ? 'number' : (typeof val === 'boolean' ? 'boolean' : 'string')));
+
         const obj = {
           type: 'state',
-          common: { name: key, type: meta.type || 'mixed', role: meta.role || 'value', read: true, write: false },
+          common: { name: key, type: targetType, role: meta.role || 'value', read: true, write: false },
           native: {}
         };
         if (meta.unit) obj.common.unit = meta.unit;
-        await this.setObjectNotExistsAsync(`${base}.${key}`, obj);
-        await this.setStateAsync(`${base}.${key}`, val, true);
+        await this.setObjectNotExistsAsync(id, obj);
 
-        if (typeof val === 'number' && Number.isFinite(val)) {
+        if (existingObj && existingObj.common && existingObj.common.type !== targetType) {
+          await this.extendObjectAsync(id, { common: { type: targetType } });
+        }
+
+        const coerced = coerceToType(val, targetType);
+        if (!(targetType === 'number' && coerced === null)) {
+          await this.setStateAsync(id, coerced, true);
+        }
+
+        if (targetType === 'number' && typeof coerced === 'number' && Number.isFinite(coerced)) {
           const mmBase = `${base}.meta.minmax.${key}`;
           await this.setObjectNotExistsAsync(`${base}.meta`, { type:'channel', common:{ name:'Meta' }, native:{} });
           await this.setObjectNotExistsAsync(`${base}.meta.minmax`, { type:'channel', common:{ name:'Min/Max learned' }, native:{} });
@@ -213,8 +267,13 @@ class OwletSmartSocks extends utils.Adapter {
 
           const prevMin = await this.getStateAsync(mmBase + '.min');
           const prevMax = await this.getStateAsync(mmBase + '.max');
-          const minVal = prevMin && prevMin.val !== null && prevMin.val !== undefined ? Math.min(Number(prevMin.val), val) : val;
-          const maxVal = prevMax && prevMax.val !== null && prevMax.val !== undefined ? Math.max(Number(prevMax.val), val) : val;
+          const minVal = (prevMin && prevMin.val !== null && prevMin.val !== undefined)
+            ? Math.min(Number(prevMin.val), coerced)
+            : coerced;
+          const maxVal = (prevMax && prevMax.val !== null && prevMax.val !== undefined)
+            ? Math.max(Number(prevMax.val), coerced)
+            : coerced;
+
           await this.setStateAsync(mmBase + '.min', minVal, true);
           await this.setStateAsync(mmBase + '.max', maxVal, true);
         }
