@@ -9,32 +9,34 @@ Der Adapter authentifiziert gegen Owlet/Ayla (EU/World), liest Geräteeigenschaf
 
 > **Hinweis:** Die experimentelle Kamera-Erkennung wurde in **0.3.5 entfernt**. Nur Socken werden unterstützt.
 
-## Installation
+## Installation (Custom-Adapter)
 ```bash
-cd /opt/iobroker/node_modules
-git clone https://github.com/fmohnke/iobroker.owlet-smartsocks.git iobroker.owlet-smartsocks
-iobroker upload owlet-smartsocks
-# Instanz hinzufügen:
+# Installation direkt aus GitHub (erforderlich, da nicht im offiziellen Repo)
+iobroker url https://github.com/fmohnke/iobroker.owlet-smartsocks/tarball/main
+
+# Erste Instanz anlegen (nur beim ersten Mal):
 iobroker add owlet-smartsocks
 ```
 
 ## Update
 ```bash
-cd /opt/iobroker/node_modules
-git clone https://github.com/fmohnke/iobroker.owlet-smartsocks.git iobroker.owlet-smartsocks
+# Dateien aus GitHub aktualisieren:
+iobroker url https://github.com/fmohnke/iobroker.owlet-smartsocks/tarball/main
+
+# Adapter-Dateien hochladen und Instanz neu starten:
 iobroker upload owlet-smartsocks
-iobroker restart owlet-smartsocks.<x>
+iobroker restart owlet-smartsocks.0
 ```
 
 ## Konfiguration
 - **Email/Passwort** deines Owlet-Kontos
-- **Region**: europe (Standard) oder world
+- **Region**: `europe` (Standard) oder `world`
 - **Polling-Intervall** in Sekunden
 - **Implementierung**: Node.js (ohne Python) **oder** Python (Worker)
 
 ## Python-Worker (optional)
 Standardmäßig nutzt der Adapter im Python-Modus **das System-`python3`** (keine venv erforderlich).
-Wenn das bei dir nicht zuverlässig funktioniert (z. B. falsche Libs/Pfade), kannst du optional eine lokale **venv** verwenden:
+Wenn das bei dir nicht zuverlässig funktioniert (z. B. falsche Libs/Pfade), kannst du optional eine lokale **venv** verwenden:
 
 ```bash
 cd /opt/iobroker/node_modules/iobroker.owlet-smartsocks
@@ -48,9 +50,10 @@ Anschließend in der Instanz:
 - (Optional) **Python-Binary** leer lassen oder explizit `python3` bzw. den Pfad eintragen
 
 ## Troubleshooting
+- **Unknown packet name owlet-smartsocks**: Zuerst `iobroker url <GitHub-Tarball>` ausführen (siehe Installation).
 - **Credentials-Fehler bei „world“**: Dein Konto liegt sehr wahrscheinlich im EU-Cluster → Region **europe**.
 - **Worker-Spawn ENOENT**: venv nicht vorhanden oder Binary-Feld falsch → entweder **venv ausschalten** (System-`python3`) oder venv wie oben anlegen.
-- **„received type X“ Warnungen**: Ab 0.3.4 werden Werte vor `setState` auf den Zieltyp gecastet; bei Alt-Objekten ggf. Objekt einmal löschen.
+- **InfluxDB 422 (field type conflict)**: Alte Measurements mit falschem Typ löschen (z. B. `base_station_on`, `charging`) und sicherstellen, dass diese States als **boolean** geschrieben werden.
 
 ## Changelog
 Siehe `CHANGELOG.md`.
