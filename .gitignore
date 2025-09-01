@@ -17,3 +17,6 @@ adapter-dist/
 
 # Python venv (optional for worker)
 venv/
+venv/
+*.tgz
+
